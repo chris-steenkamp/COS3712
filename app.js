@@ -3,7 +3,13 @@ let controls;
 let scene;
 let camera;
 let renderer;
-let tower;
+
+//array to keep track of all created geometries
+let geometries = [];
+//array to keep track of all created materials
+let materials = [];
+//array to keep track of all created meshes
+let meshes = [];
 
 function createPlane(width, height, colour = 'green') {
     const geometry = new THREE.PlaneBufferGeometry(width, height, 1, 1);
@@ -16,10 +22,37 @@ function createPlane(width, height, colour = 'green') {
     //Rotate the plane so it is parallel to the x-axis.
     plane.rotation.x = -Math.PI / 2;
 
+    geometries.push(geometry);
+    materials.push(material);
+    meshes.push(plane);
+
     return plane;
 }
 
-function createWaterTower(width, height, colour = 'blue', x = 0, y = 0, z = 0) {
+//cleanup all the created geometries, materials, meshes and other objects.
+function dispose() {
+    container.removeChild(renderer.domElement);
+
+    for (let i = 0; i < geometries.length; ++i) {
+        geometries[i].dispose;
+    }
+
+    for (let i = 0; i < materials.length; ++i) {
+        materials[i].dispose;
+    }
+
+    for (let i = 0; i < meshes.length; ++i) {
+        meshes[i].dispose;
+    }
+
+    scene.dispose();
+
+    renderer.dispose();
+}
+
+
+//create a water tower with the specified attributes.
+function createWaterTower(width, height, colour, x, y, z) {
     const geometry = new THREE.CylinderBufferGeometry(width, width, height, 32);
     const material = new THREE.MeshBasicMaterial({ color: colour });
     const tower = new THREE.Mesh(geometry, material);
@@ -27,10 +60,17 @@ function createWaterTower(width, height, colour = 'blue', x = 0, y = 0, z = 0) {
     //offset the bottom of the water tower by half it's height so it starts at y=0
     tower.position.set(x, y + (height / 2), z);
 
+    geometries.push(geometry);
+    materials.push(material);
+    meshes.push(tower);
+
     return tower;
 }
 
-function createTree(width, height, trunkRatio, x = 0, y = 0, z = 0) {
+
+//create a tree with the specified attributes.
+//trunk ratio specifies ratio of trunk to the top part of the tree.
+function createTree(width, height, trunkRatio, x, y, z) {
     const tree = new THREE.Group();
 
     const trunkHeight = height * trunkRatio;
@@ -57,24 +97,35 @@ function createTree(width, height, trunkRatio, x = 0, y = 0, z = 0) {
     //move the entire tree to the coordinates specified
     tree.position.set(x, y, z);
 
+    geometries.push(trunkGeometry);
+    materials.push(trunkMaterial);
+    meshes.push(trunk);
+
+    geometries.push(topGeometry);
+    materials.push(topMaterial);
+    meshes.push(top);
+
     return tree;
 }
 
+//create a barn with the specified attributes.
 function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, x, y, z) {
     const wallHeight = height * 0.5;
     const roofHeight = height - wallHeight;
 
+    //the roof should have an overhang on each side of the barn so we * 2
     const widthPlusOverhang = width + (roofOverhang * 2);
     const depthPlusOverhang = depth + (roofOverhang * 2);
 
     const barn = new THREE.Group();
 
     const buildingGeometry = new THREE.BoxBufferGeometry(width, wallHeight, depth);
-    const buildingMesh = new THREE.MeshBasicMaterial({ color: wallColour });
-    const building = new THREE.Mesh(buildingGeometry, buildingMesh);
+    const buildingMaterial = new THREE.MeshBasicMaterial({ color: wallColour });
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    //offset the y position of the building by half the height so it starts at y=0
     building.position.set(x, y + (wallHeight / 2), z);
 
-    //For the roof, we define a triangle which we then extrude to create a prism
+    //For the roof, we define a simple triangle which we then extrude to create a prism
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
     shape.lineTo(widthPlusOverhang / 2, roofHeight);
@@ -82,8 +133,8 @@ function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, 
     shape.lineTo(0, 0);
 
     const roofGeometry = new THREE.ExtrudeBufferGeometry(shape, { steps: 1, depth: depthPlusOverhang, bevelEnabled: false });
-    const roofMesh = new THREE.MeshBasicMaterial({ color: roofColour });
-    const roof = new THREE.Mesh(roofGeometry, roofMesh);
+    const roofMaterial = new THREE.MeshBasicMaterial({ color: roofColour });
+    const roof = new THREE.Mesh(roofGeometry, roofMaterial);
 
     //To center the roof over the building, we move the x-axis back by half the
     //width and the z-axis back by half the depth. We also move the prism up
@@ -96,13 +147,32 @@ function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, 
     //Move the entire barn structure to the coordinates specified.
     barn.position.set(x, y, z);
 
+    geometries.push(buildingGeometry);
+    materials.push(buildingMaterial);
+    meshes.push(building);
+
+    geometries.push(roofGeometry);
+    materials.push(roofMaterial);
+    meshes.push(roof);
+
     return barn;
 }
 
 function createLighting() {
-    const light = new THREE.DirectionalLight(0x333333, 5.0);
-    light.position.set(10, 10, 10);
-    scene.add(light);
+}
+
+//Code to handle escape key.
+//The other movements such as zoom, rotate, etc. are done in OrbitControls.js
+//see createControls()
+function handleKeyDown(event) {
+    switch (event.keyCode) {
+        case 27:
+            window.alert("We should close the window but javascript doesn't allow closing a window not created by the script.\nThis will clear the scene and remove the renderer from the container.");
+            //remove the listener so we don't try dispose objects twice
+            window.removeEventListener('keydown', handleKeyDown);
+            dispose();
+            break;
+    }
 }
 
 function setupListeners() {
@@ -113,11 +183,8 @@ function setupListeners() {
         renderer.setSize(container.clientWidth, container.clientHeight);
     });
 
-    window.addEventListener('keypress', (key) => {
-        // switch(key) {
-        //     case KEY
-        // }
-    })
+    //Handle when the user presses a key
+    window.addEventListener('keydown', handleKeyDown);
 }
 
 function setupRenderer() {
@@ -131,14 +198,14 @@ function setupCamera() {
     fov = 35;
     aspect = container.clientWidth / container.clientHeight;
     near = 0.1;
-    far = 1000;
+    far = 10000;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
-    camera.position.set(0, 0, 150);
+    camera.position.set(0, 0, 100);
 }
 
 function setupScene() {
-    scene.add(createPlane(140, 140));
+    scene.add(createPlane(100, 100));
 
     scene.add(createWaterTower(3, 1, 'blue', -4, 0, -10));
 
@@ -148,31 +215,33 @@ function setupScene() {
     scene.add(createTree(2, 12, 0.2, -4, 0, -20));
     scene.add(createTree(1, 4, 0.3, 7, 0, 5));
     scene.add(createTree(1.5, 5, 0.14, 14, 0, 12));
-    scene.add(createTree(1, 3, 0.4, 21, 0, -9));
-
-    scene.rotation.x += 0.55;
-    scene.rotation.y += -0.78;
-    scene.rotation.z += 0;
+    scene.add(createTree(1, 3, 0.5, 21, 0, -9));
 }
 
 function init() {
-    setupListeners();
-
     container = document.querySelector("#scene-container");
-
+    
     scene = new THREE.Scene();
     scene.background = new THREE.Color('skyblue');
-
+    
+    setupListeners();
+    
     setupCamera();
 
     setupRenderer();
 
     createControls();
-    // controls.update();
 
     setupScene();
 }
 
+/* I have modified and reduced the original OrbitControls.js code to meet the
+ * requirements of the first assignment. 
+ * The changes made include:
+ *  - Handling keydown event for up/down keys to zoom in/out 
+ *  - Handling keydown event for left/right keys to orbit left/right
+ *  - Handling left mouse button to adjust viewing angle up/down from 0 to 90
+ */
 function createControls() {
     controls = new THREE.OrbitControls(camera, container);
 }
@@ -186,7 +255,6 @@ function animate() {
 }
 
 function update() {
-    // controls.update();
 }
 
 function render() {
