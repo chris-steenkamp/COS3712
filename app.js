@@ -48,6 +48,10 @@ function dispose() {
     scene.dispose();
 
     renderer.dispose();
+
+    const exitMessage = document.createElement('h1');
+    exitMessage.textContent = "Application has exited. Please close the window.";
+    container.appendChild(exitMessage);
 }
 
 
