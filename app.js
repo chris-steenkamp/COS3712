@@ -15,8 +15,12 @@ let textures = [];
 const loader = new THREE.TextureLoader();
 
 function createPlane(width, height, colour = 'green') {
+    const grassTexture = loader.load('./images/grass_bump03.jpg');
+    grassTexture.wrapS = THREE.MirroredRepeatWrapping;
+    grassTexture.wrapT = THREE.MirroredRepeatWrapping;
+    grassTexture.repeat.set(5, 5);
     const geometry = new THREE.PlaneBufferGeometry(width, height, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: colour, side: THREE.DoubleSide });
+    const material = new THREE.MeshPhongMaterial({ color: colour, bumpMap: grassTexture });
     const plane = new THREE.Mesh(geometry, material);
     //Move the plane down slightly so the bottom of other objects aren't visible
     //from underneath the plane.
@@ -28,6 +32,7 @@ function createPlane(width, height, colour = 'green') {
     geometries.push(geometry);
     materials.push(material);
     meshes.push(plane);
+    textures.push(grassTexture);
 
     return plane;
 }
