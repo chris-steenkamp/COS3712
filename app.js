@@ -7,6 +7,7 @@ let camera;
 let renderer;
 let sun;
 let moon;
+let stars;
 let isDayTime = true;
 
 //array to keep track of all created geometries
@@ -79,6 +80,44 @@ function dispose() {
     exitMessage.textContent = "Application has exited. Please close the window.";
     container.appendChild(exitMessage);
 }
+
+function createStars(x, y, z) {
+    const starsGeometry = new THREE.Geometry();
+    const atmosphereHeight = 400;
+
+    const depth = 1000;
+    const ceiling = depth / 2;
+    const width = depth;
+
+
+    for (let i = 0; i < 100000; i++) {
+
+        let star = new THREE.Vector3();
+        star.x = THREE.Math.randFloatSpread(width);
+        star.y = THREE.Math.randFloat(0, ceiling);
+        star.z = THREE.Math.randFloatSpread(depth);
+
+        if (star.y > atmosphereHeight ||
+            star.x > atmosphereHeight ||
+            star.x < -atmosphereHeight ||
+            star.z > atmosphereHeight ||
+            star.z < -atmosphereHeight) {
+            starsGeometry.vertices.push(star);
+        }
+
+    }
+
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, });
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+
+    geometries.push(starsGeometry);
+    materials.push(starsMaterial);
+    meshes.push(starField);
+
+    return starField;
+}
+
+
 
 
 //create a water tower with the specified attributes.
@@ -301,6 +340,7 @@ function setupScene() {
     scene.add(createTree(1, 3, 0.5, 21, 0, -9));
 
     //Create the below elements now, but only add them to the scene at night time.
+    stars = createStars();
     moon = createMoon(-150, 75, -375, 15);
 }
 
