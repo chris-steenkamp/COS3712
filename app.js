@@ -69,17 +69,29 @@ function dispose() {
 
 
 //create a water tower with the specified attributes.
-function createWaterTower(width, height, colour, x, y, z) {
+function createWaterTower(width, height, x, y, z) {
+    const waterTexture = loader.load('./images/water01.jpg');
+    const containerTexture = loader.load('./images/water_tank_wall.jpg');
+
+    containerTexture.wrapS = THREE.MirroredRepeatWrapping;
+    containerTexture.repeat.set(10, 1);
+
+    const towerMaterials = [
+        new THREE.MeshPhongMaterial({ map: containerTexture }),
+        new THREE.MeshPhongMaterial({ map: waterTexture }),
+        new THREE.MeshPhongMaterial({ color: 'black' }),
+    ];
     const geometry = new THREE.CylinderBufferGeometry(width, width, height, 32);
-    const material = new THREE.MeshBasicMaterial({ color: colour });
-    const tower = new THREE.Mesh(geometry, material);
+    const tower = new THREE.Mesh(geometry, towerMaterials);
 
     //offset the bottom of the water tower by half it's height so it starts at y=0
     tower.position.set(x, y + (height / 2), z);
 
     geometries.push(geometry);
-    materials.push(material);
+    materials.push(towerMaterials);
     meshes.push(tower);
+    textures.push(waterTexture);
+    textures.push(containerTexture);
 
     return tower;
 }
@@ -224,7 +236,7 @@ function setupCamera() {
 function setupScene() {
     scene.add(createPlane(100, 100));
 
-    scene.add(createWaterTower(3, 1, 'blue', -4, 0, -10));
+    scene.add(createWaterTower(3, 1, -4, 0, -10));
 
     scene.add(createBarn(10, 3, 5, 0.3, 'red', 'gray', 0, 0, 0));
 
