@@ -217,11 +217,11 @@ THREE.OrbitControls = function (object, domElement) {
 		return Math.pow(0.95, scope.zoomSpeed);
 	}
 
-	function rotateLeft(angle) {
+	this.rotateLeft = function(angle) {
 		sphericalDelta.theta -= angle;
 	}
 
-	function rotateUp(angle) {
+	this.rotateUp = function(angle) {
 		sphericalDelta.phi -= angle;
 	}
 
@@ -252,7 +252,7 @@ THREE.OrbitControls = function (object, domElement) {
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
+		scope.rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight);
 
 		rotateStart.copy(rotateEnd);
 
@@ -276,11 +276,11 @@ THREE.OrbitControls = function (object, domElement) {
 				needsUpdate = true;
 				break;
 			case scope.keys.LEFT:
-				rotateLeft(scope.rotateSpeed);
+				scope.rotateLeft(scope.rotateSpeed);
 				needsUpdate = true;
 				break;
 			case scope.keys.RIGHT:
-				rotateLeft(-scope.rotateSpeed);
+				scope.rotateLeft(-scope.rotateSpeed);
 				needsUpdate = true;
 				break;
 		}

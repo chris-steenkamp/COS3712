@@ -248,6 +248,10 @@ function init() {
  */
 function createControls() {
     controls = new THREE.OrbitControls(camera, container);
+    controls.rotateLeft(0.15);
+    controls.rotateUp(0.075);
+    controls.update();
+
 }
 
 function animate() {
