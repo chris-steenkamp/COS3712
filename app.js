@@ -18,6 +18,9 @@ let materials = [];
 let meshes = [];
 //array to keep track of all created textures
 let textures = [];
+//array to keep track of garden lights
+let gardenLights = [];
+
 const loader = new THREE.TextureLoader();
 
 //Preload textures for the trees because we will create
@@ -118,7 +121,30 @@ function createStars(x, y, z) {
 }
 
 
+function createGardenLight(x, y, z, colour, intensity, distance) {
+    const light = new THREE.Group();
 
+    const lightSource = new THREE.PointLight(colour, intensity, distance);
+    lightSource.position.set(x, y + 0.5, z);
+
+    const lightStalkHeight = 0.1;
+    const lightStalkGeometry = new THREE.CylinderBufferGeometry(0.025, 0.025, lightStalkHeight, 32);
+    const lightStalkMaterial = new THREE.MeshPhongMaterial({ color: 'gray' });
+    const lightStalkMesh = new THREE.Mesh(lightStalkGeometry, lightStalkMaterial);
+    lightStalkMesh.position.set(x, y + (lightStalkHeight / 2), z);
+
+    light.add(lightSource);
+    light.add(lightStalkMesh);
+
+    light.position.set(x, y, z);
+
+    geometries.push(lightStalkGeometry);
+    materials.push(lightStalkMaterial);
+    meshes.push(lightStalkMesh);
+    gardenLights.push(lightSource);
+
+    return light;
+}
 
 //create a water tower with the specified attributes.
 function createWaterTower(width, height, x, y, z) {
@@ -338,6 +364,12 @@ function setupScene() {
     scene.add(createTree(1, 4, 0.3, 7, 0, 5));
     scene.add(createTree(1.5, 5, 0.14, 14, 0, 12));
     scene.add(createTree(1, 3, 0.5, 21, 0, -9));
+
+    //Add some garden lights, intitally turned off (intensity = 0)
+    scene.add(createGardenLight(4, 0, -14, 'yellow', 0, 35));
+    scene.add(createGardenLight(-7, 0, -12, 'yellow', 0, 35));
+    scene.add(createGardenLight(9, 0, 13, 'yellow', 0, 35));
+    scene.add(createGardenLight(-2, 0, 17, 'yellow', 0, 35));
 
     //Create the below elements now, but only add them to the scene at night time.
     stars = createStars();
