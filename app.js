@@ -148,7 +148,16 @@ function createTree(width, height, trunkRatio, x, y, z) {
 }
 
 //create a barn with the specified attributes.
-function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, x, y, z) {
+function createBarn(width, height, depth, roofOverhang, x, y, z) {
+    const buildingTexture = loader.load('./images/barn01.jpg');
+    const roofTexture = loader.load('./images/roof01.jpg');
+
+    buildingTexture.wrapS = THREE.MirroredRepeatWrapping;
+    buildingTexture.repeat.set(10, 1);
+    roofTexture.wrapS = THREE.RepeatWrapping;
+    roofTexture.wrapT = THREE.RepeatWrapping;
+    roofTexture.repeat.set(5, 5);
+
     const wallHeight = height * 0.5;
     const roofHeight = height - wallHeight;
 
@@ -159,7 +168,7 @@ function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, 
     const barn = new THREE.Group();
 
     const buildingGeometry = new THREE.BoxBufferGeometry(width, wallHeight, depth);
-    const buildingMaterial = new THREE.MeshBasicMaterial({ color: wallColour });
+    const buildingMaterial = new THREE.MeshPhongMaterial({ map: buildingTexture });
     const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
     //offset the y position of the building by half the height so it starts at y=0
     building.position.set(x, y + (wallHeight / 2), z);
@@ -172,7 +181,7 @@ function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, 
     shape.lineTo(0, 0);
 
     const roofGeometry = new THREE.ExtrudeBufferGeometry(shape, { steps: 1, depth: depthPlusOverhang, bevelEnabled: false });
-    const roofMaterial = new THREE.MeshBasicMaterial({ color: roofColour });
+    const roofMaterial = new THREE.MeshPhongMaterial({ map: roofTexture });
     const roof = new THREE.Mesh(roofGeometry, roofMaterial);
 
     //To center the roof over the building, we move the x-axis back by half the
@@ -193,6 +202,8 @@ function createBarn(width, height, depth, roofOverhang, wallColour, roofColour, 
     geometries.push(roofGeometry);
     materials.push(roofMaterial);
     meshes.push(roof);
+    textures.push(buildingTexture);
+    textures.push(roofTexture);
 
     return barn;
 }
@@ -248,7 +259,7 @@ function setupScene() {
 
     scene.add(createWaterTower(3, 1, -4, 0, -10));
 
-    scene.add(createBarn(10, 3, 5, 0.3, 'red', 'gray', 0, 0, 0));
+    scene.add(createBarn(10, 3, 5, 0.3, 0, 0, 0));
 
     //Add some different trees 
     scene.add(createTree(2, 12, 0.2, -4, 0, -20));
@@ -259,12 +270,12 @@ function setupScene() {
 
 function init() {
     container = document.querySelector("#scene-container");
-    
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color('skyblue');
-    
+
     setupListeners();
-    
+
     setupCamera();
 
     setupRenderer();
