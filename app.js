@@ -6,6 +6,7 @@ let scene;
 let camera;
 let renderer;
 let sun;
+let moon;
 let isDayTime = true;
 
 //array to keep track of all created geometries
@@ -220,6 +221,25 @@ function createSun(x, y, z, colour, attenuation) {
     return sun;
 }
 
+
+function createMoon(x, y, z, radius) {
+    const moonTexture = loader.load('./images/moon02.jpg');
+    const moonEmissiveMap = loader.load('./images/moon03.jpg');
+
+    const moonGeometry = new THREE.SphereBufferGeometry(radius, 32, 32);
+    const moonMaterial = new THREE.MeshPhongMaterial({ map: moonTexture, emissive: 'gray', emissiveIntensity: 0.75, emissiveMap: moonEmissiveMap });
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(x, y, z);
+
+    materials.push(moonMaterial);
+    geometries.push(moonGeometry);
+    meshes.push(moon);
+    textures.push(moonTexture);
+    textures.push(moonEmissiveMap);
+
+    return moon;
+}
+
 //Code to handle escape key.
 //The other movements such as zoom, rotate, etc. are done in OrbitControls.js
 //see createControls()
@@ -279,6 +299,9 @@ function setupScene() {
     scene.add(createTree(1, 4, 0.3, 7, 0, 5));
     scene.add(createTree(1.5, 5, 0.14, 14, 0, 12));
     scene.add(createTree(1, 3, 0.5, 21, 0, -9));
+
+    //Create the below elements now, but only add them to the scene at night time.
+    moon = createMoon(-150, 75, -375, 15);
 }
 
 function init() {
