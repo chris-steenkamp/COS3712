@@ -10,6 +10,9 @@ let geometries = [];
 let materials = [];
 //array to keep track of all created meshes
 let meshes = [];
+//array to keep track of all created textures
+let textures = [];
+const loader = new THREE.TextureLoader();
 
 function createPlane(width, height, colour = 'green') {
     const geometry = new THREE.PlaneBufferGeometry(width, height, 1, 1);
@@ -44,6 +47,11 @@ function dispose() {
     for (let i = 0; i < meshes.length; ++i) {
         meshes[i].dispose;
     }
+
+    for (let i = 0; i < textures.length; ++i) {
+        textures[i].dispose;
+    }
+
 
     scene.dispose();
 
@@ -199,10 +207,10 @@ function setupRenderer() {
 }
 
 function setupCamera() {
-    fov = 35;
-    aspect = container.clientWidth / container.clientHeight;
-    near = 0.1;
-    far = 10000;
+    let fov = 35;
+    let aspect = container.clientWidth / container.clientHeight;
+    let near = 0.1;
+    let far = 1000000;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
     camera.position.set(0, 0, 100);
