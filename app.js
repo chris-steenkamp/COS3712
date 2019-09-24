@@ -316,6 +316,49 @@ function handleKeyDown(event) {
             window.removeEventListener('keydown', handleKeyDown);
             dispose();
             break;
+        case 65:
+        case 97:
+            animating = !animating
+            break;
+        case 68:
+        case 100:
+            setDayTime();
+            break;
+        case 78:
+        case 110:
+            setNightTime();
+            break;
+    }
+}
+
+function setDayTime() {
+    if (!isDayTime) {
+        for (let i = 0; i < gardenLights.length; ++i) {
+            gardenLights[i].intensity = 0;
+        }
+
+        scene.remove(moon);
+        scene.remove(stars);
+
+        scene.background = new THREE.Color('skyblue');
+        sun.intensity = 1;
+
+        isDayTime = true;
+    }
+}
+
+function setNightTime() {
+    if (isDayTime) {
+        for (let i = 0; i < gardenLights.length; ++i) {
+            gardenLights[i].intensity = 1;
+        }
+
+        sun.intensity = 0.05;
+        scene.add(moon);
+        scene.add(stars);
+
+        scene.background = new THREE.Color('black')
+        isDayTime = false;
     }
 }
 
