@@ -1,8 +1,12 @@
+/// <reference path='scripts/three.js' />
+
 let container;
 let controls;
 let scene;
 let camera;
 let renderer;
+let sun;
+let isDayTime = true;
 
 //array to keep track of all created geometries
 let geometries = [];
@@ -208,7 +212,12 @@ function createBarn(width, height, depth, roofOverhang, x, y, z) {
     return barn;
 }
 
-function createLighting() {
+function createSun(x, y, z, colour, attenuation) {
+    const sun = new THREE.DirectionalLight(colour, attenuation);
+    sun.position.set(x, y, z);
+    sun.target.position.set(5, 2, 5);
+
+    return sun;
 }
 
 //Code to handle escape key.
@@ -255,7 +264,11 @@ function setupCamera() {
 }
 
 function setupScene() {
-    scene.add(createPlane(100, 100));
+    sun = createSun(-50, 25, 25, 'white', 0.95);
+    scene.add(sun);
+    scene.add(sun.target);
+
+    scene.add(createPlane(500, 500));
 
     scene.add(createWaterTower(3, 1, -4, 0, -10));
 
@@ -312,6 +325,8 @@ function update() {
 }
 
 function render() {
+    update();
+
     renderer.render(scene, camera);
 }
 
