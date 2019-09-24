@@ -14,6 +14,14 @@ let meshes = [];
 let textures = [];
 const loader = new THREE.TextureLoader();
 
+//Preload textures for the trees because we will create
+//many trees which can share textures to save memory.
+const trunkTextures = [loader.load('./images/trunk01.jpg'), loader.load('./images/trunk02.jpg'), loader.load('./images/trunk03.jpg')];
+const leavesTextures = [loader.load('./images/leaves01.jpg'), loader.load('./images/leaves02.jpg'), loader.load('./images/leaves03.jpg')];
+//Ensure the created textures get cleaned up at the end of program
+textures.push(trunkTextures);
+textures.push(leavesTextures);
+
 function createPlane(width, height, colour = 'green') {
     const grassTexture = loader.load('./images/grass_bump03.jpg');
     grassTexture.wrapS = THREE.MirroredRepeatWrapping;
@@ -100,21 +108,23 @@ function createWaterTower(width, height, x, y, z) {
 //create a tree with the specified attributes.
 //trunk ratio specifies ratio of trunk to the top part of the tree.
 function createTree(width, height, trunkRatio, x, y, z) {
+    //Choose a random texture for the tree trunk and leaves
+    const trunkIndex = Math.floor(Math.random() * trunkTextures.length);
+    const leavesIndex = Math.floor(Math.random() * leavesTextures.length);
     const tree = new THREE.Group();
 
     const trunkHeight = height * trunkRatio;
     const trunkWidth = width / 4;
     const topHeight = height * (1 - trunkRatio);
 
-
     const trunkGeometry = new THREE.CylinderBufferGeometry(trunkWidth, trunkWidth, trunkHeight, 32);
-    const trunkMaterial = new THREE.MeshBasicMaterial({ color: 'brown' });
+    const trunkMaterial = new THREE.MeshPhongMaterial({ map: trunkTextures[trunkIndex], bumpMap: trunkTextures[trunkIndex] });
     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
     //offset the y position of the trunk by half the height so it starts at y=0
     trunk.position.set(x, y + (trunkHeight / 2), z);
 
     const topGeometry = new THREE.ConeBufferGeometry(width, topHeight, 32);
-    const topMaterial = new THREE.MeshBasicMaterial({ color: 'darkgreen' });
+    const topMaterial = new THREE.MeshPhongMaterial({ map: leavesTextures[leavesIndex] });
     const top = new THREE.Mesh(topGeometry, topMaterial);
     //offset the top of the tree by half it's height to start at y=0 and then 
     //add the trunk height so the top starts where the trunk ends.
